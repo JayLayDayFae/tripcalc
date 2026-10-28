@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111820">
+<title>Trip Calc</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0d131a;
+    --panel: #141e28;
+    --panel2: #182430;
+    --border: #2a3947;
+    --text: #dce5ec;
+    --muted: #91a2b1;
+    --accent: #7e9fb5;
+    --input: #101922;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    background: var(--bg); color: var(--text);
+    font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  main { width: min(760px, calc(100% - 32px)); margin: 42px auto 64px; }
+  header { margin-bottom: 24px; }
+  h1 { margin: 0 0 4px; font-size: clamp(2rem, 6vw, 2.7rem); font-weight: 650; letter-spacing: -.04em; }
+  .subtitle { margin: 0; color: var(--muted); }
+  .panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 16px; padding: 22px; margin: 16px 0;
+  }
+  h2 { margin: 0 0 14px; font-size: 1.1rem; font-weight: 600; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  label { display: block; color: var(--muted); font-size: .9rem; margin-bottom: 6px; }
+  input, select {
+    width: 100%; min-height: 46px; border: 1px solid var(--border);
+    border-radius: 9px; background: var(--input); color: var(--text);
+    padding: 10px 12px; font: inherit;
+  }
+  input:focus, select:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .help { color: var(--muted); font-size: .86rem; margin: 7px 0 0; }
+  button {
+    margin-top: 16px; width: 100%; min-height: 46px; border: 1px solid #3c5364;
+    border-radius: 10px; background: #263847; color: var(--text);
+    font: inherit; font-weight: 600; cursor: pointer;
+  }
+  button:hover { background: #2d4252; }
+  .result { display: none; }
+  .result.visible { display: block; }
+  .result p { margin: 0 0 12px; }
+  .range { color: var(--text); font-size: 1.25rem; font-weight: 650; }
+  .notice {
+    border-left: 3px solid #586d7c; padding: 10px 13px;
+    background: var(--panel2); border-radius: 0 8px 8px 0; color: var(--muted);
+  }
+  .notice strong { color: var(--text); }
+  ul { margin: 8px 0 0; padding-left: 21px; }
+  li { margin: 6px 0; }
+  footer { color: var(--muted); font-size: .84rem; margin-top: 22px; }
+  @media (max-width: 540px) { main { margin-top: 24px; } .grid { grid-template-columns: 1fr; } .panel { padding: 17px; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Trip Calc</h1>
+    <p class="subtitle">A calm, harm-reduction guide to substance onset and duration.</p>
+  </header>
+
+  <section class="panel">
+    <h2>What did you take?</h2>
+    <form id="calcForm">
+      <div class="grid">
+        <div>
+          <label for="substance">Substance / product type</label>
+          <select id="substance" required>
+            <option value="edible">THC edible (gummy, brownie, drink)</option>
+            <option value="inhaled">THC inhaled (smoked or vaped)</option>
+            <option value="psilocybin">Psilocybin / mushroom product</option>
+            <option value="unknown">Unknown or unverified product</option>
+          </select>
+        </div>
+        <div>
+          <label for="route">How was it taken?</label>
+          <select id="route">
+            <option value="oral">Swallowed / eaten</option>
+            <option value="inhaled">Smoked / vaped</option>
+            <option value="other">Other / unsure</option>
+          </select>
+        </div>
+        <div>
+          <label for="amount">Amount taken (optional)</label>
+          <input id="amount" type="number" min="0" step="any" placeholder="e.g. 5">
+        </div>
+        <div>
+          <label for="unit">Amount unit / label means</label>
+          <select id="unit">
+            <option value="mgthc">mg THC (if label is reliable)</option>
+            <option value="mgproduct">mg of product / blend</option>
+            <option value="mushroom">mg mushroom material / extract</option>
+            <option value="unknown">Not sure / label unclear</option>
+          </select>
+        </div>
+        <div>
+          <label for="height">Height (optional)</label>
+          <input id="height" type="number" min="0" step="any" placeholder="e.g. 175">
+        </div>
+        <div>
+          <label for="heightUnit">Height unit</label>
+          <select id="heightUnit">
+            <option value="cm">cm</option>
+            <option value="in">inches</option>
+          </select>
+        </div>
+        <div>
+          <label for="weight">Weight (optional)</label>
+          <input id="weight" type="number" min="0" step="any" placeholder="e.g. 70">
+        </div>
+        <div>
+          <label for="weightUnit">Weight unit</label>
+          <select id="weightUnit">
+            <option value="kg">kg</option>
+            <option value="lb">lb</option>
+          </select>
+        </div>
+        <div>
+          <label for="taken">When did you take it?</label>
+          <input id="taken" type="time">
+        </div>
+        <div>
+          <label for="food">Food recently?</label>
+          <select id="food">
+            <option value="unknown">Not sure / varies</option>
+            <option value="meal">Recently ate a meal</option>
+            <option value="empty">Mostly empty stomach</option>
+          </select>
+        </div>
+        <div>
+          <label for="tolerance">Usual experience</label>
+          <select id="tolerance">
+            <option value="unknown">Varies / not sure</option>
+            <option value="low">Little or no experience</option>
+            <option value="moderate">Occasional / moderate use</option>
+            <option value="high">Frequent use</option>
+          </select>
+        </div>
+        <div>
+          <label for="label">Product label / lab test</label>
+          <select id="label">
+            <option value="unknown">Unknown or not verified</option>
+            <option value="tested">Batch-specific lab results verified</option>
+            <option value="regulated">Regulated, clearly labeled product</option>
+          </select>
+        </div>
+      </div>
+      <p class="help">Height and weight are collected only as optional context. They cannot reliably predict onset, intensity, or a safe dose.</p>
+      <button type="submit">Show general timing & safety info</button>
+    </form>
+  </section>
+
+  <section id="result" class="panel result" aria-live="polite">
+    <h2>General timing estimate</h2>
+    <p id="timing" class="range"></p>
+    <p id="duration"></p>
+    <div id="caution" class="notice"></div>
+  </section>
+
+  <section class="panel">
+    <h2>While you wait</h2>
+    <ul>
+      <li>Don't take more just because you don't feel effects yet. Edibles can be delayed and may build for several hours.</li>
+      <li>Avoid mixing substances, including alcohol, THC, or mushroom products.</li>
+      <li>Stay somewhere comfortable with a trusted sober person, sip water normally, and don't drive or cycle in traffic.</li>
+      <li>Unregulated mushroom products can contain unexpected ingredients. A milligram number alone does not verify what's inside.</li>
+    </ul>
+    <p class="help">Get urgent medical help for trouble breathing, seizures, collapse, severe chest pain, or if someone is difficult to wake. In the U.S., Poison Control is 1-800-222-1222.</p>
+  </section>
+
+  <footer>
+    Trip Calc provides broad educational ranges, not a prediction of your personal experience or a dosing recommendation. Onset and duration vary with product, route, food, metabolism, and other factors. Amount, height, weight, and tolerance cannot reliably calculate when a substance will kick in.
+  </footer>
+</main>
+<script>
+const form = document.getElementById('calcForm');
+const substance = document.getElementById('substance');
+const route = document.getElementById('route');
+const unit = document.getElementById('unit');
+const label = document.getElementById('label');
+
+function syncRoute() {
+  if (substance.value === 'inhaled') route.value = 'inhaled';
+  else if (substance.value === 'edible' || substance.value === 'psilocybin') route.value = 'oral';
+}
+substance.addEventListener('change', syncRoute);
+
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const s = substance.value;
+  const r = route.value;
+  let onset = 'Timing is unpredictable';
+  let duration = 'Duration cannot be estimated reliably for an unknown product.';
+  let warning = '';
+
+  if (s === 'unknown' || label.value === 'unknown') {
+    onset = r === 'inhaled' ? 'If inhaled: effects may begin within minutes' : 'If swallowed: effects may take 30 minutes to 2+ hours';
+    duration = 'With unknown ingredients or potency, timing and duration may differ substantially from typical ranges.';
+    warning = '<strong>Extra caution:</strong> An unclear label or unverified product cannot be assessed from the amount alone. Avoid taking more or combining it with other substances.';
+  } else if (r === 'inhaled' || s === 'inhaled') {
+    onset = 'Usually within seconds to several minutes';
+    duration = 'Main effects often last around 2–4 hours; impairment may last longer.';
+    warning = '<strong>Keep it paced:</strong> Effects can build over several minutes. Stop if you feel uncomfortable and avoid driving.';
+  } else if (s === 'edible') {
+    onset = 'Often 30 minutes to 2 hours; sometimes longer';
+    duration = 'Effects commonly last 6–12 hours, with possible lingering impairment.';
+    warning = '<strong>Don’t redose early:</strong> Edibles can build slowly. Amount, body size, and tolerance cannot predict an exact onset or intensity.';
+  } else if (s === 'psilocybin') {
+    onset = 'Oral effects may begin in roughly 20–60 minutes, but can take longer';
+    duration = 'Effects often last several hours. Unknown mushroom products can behave differently.';
+    warning = '<strong>Product uncertainty:</strong> Packaged “mushroom” edibles may not contain what the label claims. Do not use the displayed amount to infer a psilocybin dose, and avoid mixing with THC or other substances.';
+  }
+
+  const amount = document.getElementById('amount').value;
+  const unitText = unit.options[unit.selectedIndex].text;
+  if (amount && (s === 'unknown' || label.value === 'unknown' || unit.value !== 'mgthc')) {
+    warning += ' The entered amount (' + amount + ' ' + unitText + ') does not establish the active dose.';
+  } else if (amount && s === 'edible') {
+    warning += ' The entered number is not used to predict onset; verify whether the label states THC per serving or per package.';
+  }
+
+  document.getElementById('timing').textContent = onset;
+  document.getElementById('duration').textContent = duration;
+  document.getElementById('caution').innerHTML = warning;
+  const result = document.getElementById('result');
+  result.classList.add('visible');
+  result.scrollIntoView({behavior: 'smooth', block: 'start'});
+});
+</script>
+</body>
+</html>
